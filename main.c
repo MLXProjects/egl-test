@@ -26,12 +26,6 @@ static EGLint const eglconfig_attrs[] = {
 static EGLint eglwin_attrs[] = {
 	EGL_NONE
 };
-/*
-static EGLint eglbuffer_attrs[] = {
-	EGL_WIDTH, TEX_WIDTH,
-	EGL_HEIGHT, TEX_HEIGHT,
-	EGL_NONE
-};*/
 
 static const EGLint eglcontext_attrs[] = {
 	EGL_CONTEXT_CLIENT_VERSION, 2,
@@ -87,26 +81,26 @@ int main(int argc, char **arg){
 	if (!eglMakeCurrent(egl_disp, egl_surface, egl_surface, context)) {
 		goto main_err;
 	}
-	/* print some GLES */
+	/* print some GLES info */
 	printf("GL Vendor: \"%s\"\n", glGetString(GL_VENDOR));
 	printf("GL Renderer: \"%s\"\n", glGetString(GL_RENDERER));
 	printf("GL Version: \"%s\"\n", glGetString(GL_VERSION));
-	/*******************GL ES INITIALIZED*******************/
+	/*****************EGL/GL ES INITIALIZED*****************/
 	/* declare triangle shader & fragment */
 	const char *vertex_shader_source =
-	"attribute vec4 aPosition;    \n"
-	"attribute vec4 aColor;       \n"
-	"varying vec4 vColor;         \n"
-	"void main(){                 \n"
-	"    vColor = aColor;         \n"
+	"attribute vec4 aPosition; \n"
+	"attribute vec4 aColor; \n"
+	"varying vec4 vColor; \n"
+	"void main(){ \n"
+	"    vColor = aColor; \n"
 	"    gl_Position = aPosition; \n"
-	"}                            \n";
+	"} \n";
 	const char *fragment_shader_source =
-	"precision mediump float;     \n"
-	"varying vec4 vColor;         \n"
-	"void main(){                 \n"
-	"    gl_FragColor = vColor;   \n"
-	"}                            \n";
+	"precision mediump float; \n"
+	"varying vec4 vColor; \n"
+	"void main(){ \n"
+	"    gl_FragColor = vColor; \n"
+	"} \n";
 	/* declare triangle vertices & colors */
 	GLfloat vVertices[] = {  0.0f,  0.5f, 0.0f,
 							-0.5f, -0.5f, 0.0f,
@@ -196,7 +190,6 @@ int main(int argc, char **arg){
 	/* draw scene frame */
 	float state=0.0f;
 	int reverse=0, count=6;
-	usleep(4000*1000);
 	do {
 		if (reverse) state -= 0.016f;
 		else state += 0.016f;
@@ -217,7 +210,10 @@ int main(int argc, char **arg){
 			count--;
 		}
 	} while (count);
-	/* cleanup */
+	/* clear screen before exit */
+	glClearColor(0.0, 0.0, 0.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	/* TODO: cleanup */
 	return 0;
 main_err:;
 	int last_err = eglGetError();
