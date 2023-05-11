@@ -101,15 +101,6 @@ int main(int argc, char **arg){
 	"void main(){ \n"
 	"    gl_FragColor = vColor; \n"
 	"} \n";
-	/* declare triangle vertices & colors */
-	GLfloat vVertices[] = {  0.0f,  0.5f, 0.0f,
-							-0.5f, -0.5f, 0.0f,
-							 0.5f, -0.5f, 0.0f };
-	GLfloat vColors[] = {
-				1.0f, 0.0f, 0.0f, 
-				1.0f, 0.0f, 1.0f,
-				0.0f, 1.0f, 0.0f,
-				0.0f, 1.0f, 1.0f};
 	/* create vertex shader */
 	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
 	if (!vertex_shader){
@@ -182,23 +173,51 @@ int main(int argc, char **arg){
 	/* setup clear color & blank at startup */
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	/* init arrays? */
+	/* declare triangle vertices & colors */
+	GLfloat vVertices[9] = {
+				 0.0f,  0.5f, 0.0f,
+				-0.5f, -0.5f, 0.0f,
+				 0.5f, -0.5f, 0.0f };
+	/*GLfloat vVertices[9] = {
+				0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f,
+				0.0f, 0.0f, 0.0f };*/
+	GLfloat vColors[12] = {
+				0.0f, 0.0f, 0.0f, 1.0f, 
+				0.0f, 0.0f, 0.0f, 1.0f, 
+				0.0f, 0.0f, 0.0f, 1.0f};
+	/* setup vertex arrays using declared values */
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, vVertices);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, vColors);
 	glEnableVertexAttribArray(1);
+	/* set viewport to screen center */
+	glViewport(0, 0, surface_width, surface_height);
 	/* draw scene frame */
 	float state=0.0f;
-	int reverse=0, count=6;
+	int reverse=0, count=4;
 	do {
 		if (reverse) state -= 0.016f;
 		else state += 0.016f;
 		/* setup clear color */
-		glClearColor(state, state, state, 1.0);
-		/* set viewport to screen center */
-		glViewport(0, 0, surface_width, surface_height);
+		//glClearColor(state, state, state, 1.0);
 		/* clear scene */
 		glClear(GL_COLOR_BUFFER_BIT);
+		/* update vertex vertices */
+		vVertices[1] = 0.5f*state;	/* top center corner Y */
+		vVertices[3] = -0.5f*state;	/* bottom left corner X */
+		vVertices[4] = -0.5f*state;	/* bottom left corner Y */
+		vVertices[6] = 0.5f*state;	/* bottom right corner X */
+		vVertices[7] = -0.5f*state;	/* bottom right corner Y */
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, &vVertices);
+		/* update vertex colors */
+		vColors[5] = 1.0f*(1.0f-state);	/* bottom left corner */
+		vColors[4] = 1.0f*state;	/* bottom left corner */
+		vColors[0] = 1.0f*(1.0f-state);	/* top center corner */
+		vColors[2] = 1.0f*state;	/* top center corner */
+		vColors[10] = 1.0f*(1.0f-state);	/* bottom right corner */
+		vColors[9] = 1.0f*state;	/* bottom right corner */
+		glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, &vColors);
 		/* draw triangle */
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		/* swap drawing buffers? */
@@ -208,12 +227,14 @@ int main(int argc, char **arg){
 		else if (state<=0.0f){
 			reverse=0;
 			count--;
+			usleep(500*1000);
 		}
 	} while (count);
 	/* clear screen before exit */
 	glClearColor(0.0, 0.0, 0.0, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
-	/* TODO: cleanup */
+	/* cleanup & exit */
+	glDeleteProgram(program);
 	return 0;
 main_err:;
 	int last_err = eglGetError();
